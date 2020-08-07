@@ -2,6 +2,11 @@
 FROM ros:kinetic-robot
 LABEL maintainer="olala7846@gmail.com"
 
+# Fix Docker Issue
+# debconf: delaying package configuration, since apt-utils is not installed
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
+
 # Install Dataspeed DBW https://goo.gl/KFSYi1 from binary
 # adding Dataspeed server to apt
 RUN sh -c 'echo "deb [ arch=amd64 ] http://packages.dataspeedinc.com/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-dataspeed-public.list'
@@ -16,8 +21,10 @@ RUN apt-get upgrade -y
 # end installing Dataspeed DBW
 
 # install python packages
-RUN apt-get install -y python-pip
 COPY requirements.txt ./requirements.txt
+RUN apt-get install -y python-pip
+RUN pip install --upgrade pip
+RUN pip install setuptools --upgrade
 RUN pip install -r requirements.txt
 
 # install required ros dependencies
@@ -32,3 +39,6 @@ RUN mkdir /capstone
 VOLUME ["/capstone"]
 VOLUME ["/root/.ros/log/"]
 WORKDIR /capstone/ros
+
+# Return frontend back to interactive
+ENV DEBIAN_FRONTEND teletype
