@@ -200,17 +200,17 @@ class TLDetector(object):
         Determines the current color of the traffic light.
         Returns ID of traffic light color.
         """
-        # for testing
-        return light.state
+        # This can be used on the simulator. No TL Detector needed!
+        # return light.state
 
-        # if not self.camera_image:
-        #     self.prev_light_loc = None
-        #     return False
+        if not self.camera_image:
+            self.prev_light_loc = None
+            return False
 
-        # cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
-        # # Get classification
-        # return self.light_classifier.get_classification(cv_image)
+        # Get classification
+        return self.light_classifier.get_classification(cv_image)
 
 
 if __name__ == "__main__":
