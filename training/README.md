@@ -66,6 +66,8 @@ docker exec -it udacity_training /bin/bash
 
 While training you can monitor the CPU (`htop`) and GPU (`watch -n 0.5 nvidia-smi`) usage, and make sure the GPU is working as intended.
 
+If there is an error related to mark flags as required, those lines can be commented out!.
+
 ```bash
 docker run --gpus all -v $PWD:/capstone_training --name udacity_training --rm -it capstone_training bash
 
@@ -79,18 +81,17 @@ export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/object_detection
 # Test it
 python object_detection/builders/model_builder_test.py
 
-# Create data files
+# Create data files for sim/real
+python data_conversion_udacity_sim.py --output_path sim_data.record
 python data_conversion_udacity_real.py --output_path real_data.record
 
-# Training
+# Train sim/real
+python object_detection/train.py --pipeline_config_path=config/ssd_inception-traffic-udacity_sim.config --train_dir=data/sim_training_data/sim_data_capture
 python object_detection/train.py --pipeline_config_path=config/ssd_inception-traffic_udacity_real.config --train_dir=data/real_training_data
 
-# Save model
-python object_detection/export_inference_graph.py --pipeline_config_path=config/ssd_inception-traffic_udacity_real.config --trained_checkpoint_prefix=data/real_training_data/model.ckpt-<#> --output_directory=frozen_models/frozen_real_inception
-
-python object_detection/export_inference_graph.py --pipeline_config_path=config/faster_rcnn-traffic_udacity_real.config --trained_checkpoint_prefix=data/real_training_data/model.ckpt-10000 --output_directory=frozen_real/
-
-#if saving throws an (something related to mark flag required) just comment out the respective line. This is because at it's current state object detection has some compatibility issues with tensorflow 1.13 -> it should be fine if you are using 1.14
+# Save sim/real
+python object_detection/export_inference_graph.py --pipeline_config_path=config/ssd_inception-traffic-udacity_sim.config --trained_checkpoint_prefix=data/sim_training_data/sim_data_capture/model.ckpt-5000 --output_directory=frozen_models/frozen_sim_inception/
+python object_detection/export_inference_graph.py --pipeline_config_path=config/ssd_inception-traffic_udacity_real.config --trained_checkpoint_prefix=./data/real_training_data/model.ckpt-7916 --output_directory=frozen_models/frozen_real_inception
 ```
 
 ## References:
