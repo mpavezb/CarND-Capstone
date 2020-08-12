@@ -1,6 +1,9 @@
 # Udacity capstone project dockerfile
 FROM ros:kinetic-robot
+FROM osrf/ros:kinetic-desktop-full
 LABEL maintainer="olala7846@gmail.com"
+
+RUN sed -i 's#http://archive.ubuntu.com/#http://tw.archive.ubuntu.com/#' /etc/apt/sources.list
 
 # Fix Docker Issue
 # debconf: delaying package configuration, since apt-utils is not installed
@@ -31,6 +34,8 @@ RUN pip install -r requirements.txt
 RUN apt-get install -y ros-$ROS_DISTRO-cv-bridge
 RUN apt-get install -y ros-$ROS_DISTRO-pcl-ros
 RUN apt-get install -y ros-$ROS_DISTRO-image-proc
+RUN apt-get install -y lxde x11vnc xvfb
+RUN apt-get install -y ros-kinetic-desktop-full
 
 # socket io
 RUN apt-get install -y netbase
@@ -42,3 +47,10 @@ WORKDIR /capstone/ros
 
 # Return frontend back to interactive
 ENV DEBIAN_FRONTEND teletype
+ENV QT_X11_NO_MITSHM 1
+ENV DISPLAY DISPLAY
+
+# nvidia-docker hooks
+LABEL com.nvidia.volumes.needed="nvidia_driver"
+ENV PATH /usr/local/nvidia/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
