@@ -124,7 +124,7 @@ class TLDetector(object):
         )
 
     def publish(self):
-        rospy.loginfo("Publishing tl '%d' in topic '/traffic_waypoint'." % self.last_wp)
+        # rospy.loginfo("Publishing tl '%d' in topic '/traffic_waypoint'." % self.last_wp)
         self.upcoming_red_light_pub.publish(Int32(self.last_wp))
 
     def process_input_data(self):
@@ -201,16 +201,16 @@ class TLDetector(object):
         Returns ID of traffic light color.
         """
         # This can be used on the simulator. No TL Detector needed!
-        # return light.state
+        return light.state
 
-        if not self.camera_image:
-            self.prev_light_loc = None
-            return False
+        # if not self.camera_image:
+        #     self.prev_light_loc = None
+        #     return False
 
-        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        # cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
-        # Get classification
-        return self.light_classifier.get_classification(cv_image)
+        # # Get classification
+        # return self.light_classifier.get_classification(cv_image)
 
 
 if __name__ == "__main__":

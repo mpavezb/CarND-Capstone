@@ -26,22 +26,26 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 
 LOOKAHEAD_WPS = 200  # Number of waypoints to publish.
 FREQUENCY = 30  # Execution frequency
+MAX_DECEL = 0.5
 
 
 class WaypointUpdater(object):
     def __init__(self):
         self.base_waypoints = None
         self.pose = None
-        self.traffic = None
         self.obstacles = None
         self.traffic_sim = None
         self.waypoints_2d = None
         self.waypoint_tree = None
+        self.stopline_wp_idx = -1
+
+        # TODO: Limit speed by max velocity parameter
+        # TODO: comply with accel/jerk limits
 
         rospy.init_node("waypoint_updater")
         rospy.Subscriber("/current_pose", PoseStamped, self.pose_cb)
         rospy.Subscriber("/base_waypoints", Lane, self.waypoints_cb)
-        # rospy.Subscriber("/traffic_waypoint", Int32, self.traffic_cb)
+        rospy.Subscriber("/traffic_waypoint", Int32, self.traffic_cb)
         # rospy.Subscriber("/obstacle_waypoint", Int32, self.obstacle_cb)
         # rospy.Subscriber("/vehicle/traffic_lights", TrafficLightArray, self.traffic_sim_cb)
         self.final_waypoints_pub = rospy.Publisher(
@@ -55,16 +59,44 @@ class WaypointUpdater(object):
 
     def step(self):
         if self.is_data_available():
-            closest_id = self.get_closest_waypoint_id()
-            self.publish_waypoints(closest_id)
+            self.publish_waypoints()
 
-    def publish_waypoints(self, closest_id):
+    def publish_waypoints(self):
+        lane = self.generate_lane()
+        self.final_waypoints_pub.publish(lane)
+
+    def generate_lane(self):
+        closest_idx = self.get_closest_waypoint_id()
+        furthest_idx = closest_idx + LOOKAHEAD_WPS
+        base_waypoints = self.base_waypoints.waypoints[closest_idx:furthest_idx]
+        if self.stopline_wp_idx == -1 or (self.stopline_wp_idx >= furthest_idx):
+            waypoints = base_waypoints
+        else:
+            waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
+
         lane = Lane()
         lane.header = self.base_waypoints.header
-        lane.waypoints = self.base_waypoints.waypoints[
-            closest_id : closest_id + LOOKAHEAD_WPS
-        ]
-        self.final_waypoints_pub.publish(lane)
+        lane.waypoints = waypoints
+        return lane
+
+    def decelerate_waypoints(self, waypoints, closest_idx):
+        result = []
+        for i, wp in enumerate(waypoints):
+            p = Waypoint()
+            p.pose = wp.pose
+
+            # Two waypoints are located inside the car
+            stop_idx = max(self.stopline_wp_idx - closest_idx - 2, 0)
+
+            dist = self.distance(waypoints, i, stop_idx)
+            vel = math.sqrt(2 * MAX_DECEL * dist)
+
+            # Not the place to do it, but anyway
+            self.max_speed = 100
+            vel = max(0.0, min(self.max_speed, vel))
+            p.twist.twist.linear.x = min(vel, p.twist.twist.linear.x)
+            result.append(p)
+        return result
 
     def get_closest_waypoint_id(self):
         x = self.pose.pose.position.x
@@ -94,7 +126,7 @@ class WaypointUpdater(object):
             self.init_kdtree()
 
     def traffic_cb(self, msg):
-        self.traffic = msg
+        self.stopline_wp_idx = msg.data
 
     def obstacle_cb(self, msg):
         self.obstacles = msg
@@ -121,11 +153,11 @@ class WaypointUpdater(object):
     def distance(self, waypoints, wp1, wp2):
         dist = 0
 
-        def dist(a, b):
+        def position_dist(a, b):
             return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
 
         for i in range(wp1, wp2 + 1):
-            dist += dist(
+            dist += position_dist(
                 waypoints[wp1].pose.pose.position, waypoints[i].pose.pose.position
             )
             wp1 = i
