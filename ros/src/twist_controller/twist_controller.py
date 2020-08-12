@@ -82,7 +82,7 @@ class Controller(object):
             command.throttle = 0
             command.brake = abs(decel) * mass * wheel_radius
 
-        command.steering = self.yaw_controller.get_steering(
+        command.steer = self.yaw_controller.get_steering(
             target_vel.linear, target_vel.angular, current_vel_linear
         )
 
