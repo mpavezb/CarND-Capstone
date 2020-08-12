@@ -38,12 +38,12 @@ class DBWNode(object):
         params.fuel_capacity = rospy.get_param("~fuel_capacity", 13.5)
         params.brake_deadband = rospy.get_param("~brake_deadband", 0.1)
         params.decel_limit = rospy.get_param("~decel_limit", -5)
-        params.accel_limit = rospy.get_param("~accel_limit", 1.0)
+        params.accel_limit = rospy.get_param("~accel_limit", 5.0)
         params.wheel_radius = rospy.get_param("~wheel_radius", 0.2413)
         params.wheel_base = rospy.get_param("~wheel_base", 2.8498)
         params.steer_ratio = rospy.get_param("~steer_ratio", 14.8)
         params.max_lat_accel = rospy.get_param("~max_lat_accel", 3.0)
-        params.max_steer_angle = rospy.get_param("~max_steer_angle", 8.0)
+        params.max_steer_angle = rospy.get_param("~max_steer_angle", 1.57)
 
         # Publishers
         self.steer_pub = rospy.Publisher(
@@ -74,7 +74,7 @@ class DBWNode(object):
             # update controller
             if self.is_data_valid():
                 self.command = self.controller.control(
-                    self.current_vel, self.target_vel, self.is_dbw_enabled,
+                    self.current_vel, self.target_vel, self.is_dbw_enabled
                 )
 
             # only publish when intended

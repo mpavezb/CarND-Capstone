@@ -34,11 +34,11 @@ class Controller(object):
         )
 
         # Throttle Controller
-        kp = 0.3
-        ki = 0.1
-        kd = 0.0
+        kp = 0.2
+        ki = 0.05
+        kd = 0.01
         mn = 0.0  # min throttle
-        mx = 0.2  # max throttle
+        mx = 1.0  # max throttle
         self.throttle_controller = PID(kp, ki, kd, mn, mx)
 
         # LowPassFilter
@@ -71,7 +71,7 @@ class Controller(object):
         if target_vel.linear == 0.0 and current_vel_linear < 0.1:
             # stop vehicle
             command.throttle = 0
-            command.brake = 400
+            command.brake = 700  # !
 
         elif command.throttle < 0.1 and vel_error < 0:
             # almost stopped
