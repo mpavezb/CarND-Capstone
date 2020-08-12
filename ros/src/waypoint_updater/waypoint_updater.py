@@ -4,7 +4,7 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint, TrafficLightArray
 from std_msgs.msg import Int32
-
+import copy
 import numpy as np
 import math
 from scipy.spatial import KDTree
@@ -81,20 +81,34 @@ class WaypointUpdater(object):
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         result = []
+
+        # How many waypoints ahead we want to stop.
+        stop_idx = max(self.stopline_wp_idx - closest_idx - 3, 0)
+
+        # rospy.logwarn(
+        #     "c_id: {}, stop_line_id: {}, stop_idx: {}".format(
+        #         closest_idx, self.stopline_wp_idx, stop_idx
+        #     )
+        # )
+
+        # TODO: compute based on speed and decel
+        distance_buffer = 20
+
         for i, wp in enumerate(waypoints):
             p = Waypoint()
             p.pose = wp.pose
-
-            # Two waypoints are located inside the car
-            stop_idx = max(self.stopline_wp_idx - closest_idx - 2, 0)
+            p.twist = copy.deepcopy(wp.twist)
 
             dist = self.distance(waypoints, i, stop_idx)
             vel = math.sqrt(2 * MAX_DECEL * dist)
 
             # Not the place to do it, but anyway
-            self.max_speed = 100
-            vel = max(0.0, min(self.max_speed, vel))
-            p.twist.twist.linear.x = min(vel, p.twist.twist.linear.x)
+            # self.max_speed = 100
+            # vel = max(0.0, min(self.max_speed, vel))
+            vel = max(0.0, vel)
+            if dist < distance_buffer:
+                p.twist.twist.linear.x = min(vel, p.twist.twist.linear.x)
+            # rospy.logwarn(" - dist: {}, vel: {} ".format(dist, p.twist.twist.linear.x))
             result.append(p)
         return result
 
