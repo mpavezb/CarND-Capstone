@@ -8,102 +8,34 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
 
 ## Resources
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Training](./training/README.md)
+- [Installation](./INSTALL.md): Local/Docker setup, simulator, and dependencies.
+- [Testing](#testing): How to test on the simulator and the real car data.
+- [Design](#design): TODO
+- [Results](#results): TODO
+- [Acknowledgements](#acknowledgements).
 
-## Installation
 
-Please use **one** of the two installation options, either native **or** docker installation.
-
-### Native Installation
-
-* Be sure that your workstation is running Ubuntu 16.04 Xenial Xerus or Ubuntu 14.04 Trusty Tahir. [Ubuntu downloads can be found here](https://www.ubuntu.com/download/desktop).
-* If using a Virtual Machine to install Ubuntu, use the following configuration as minimum:
-  * 2 CPU
-  * 2 GB system memory
-  * 25 GB of free hard drive space
-
-  The Udacity provided virtual machine has ROS and Dataspeed DBW already installed, so you can skip the next two steps if you are using this.
-
-* Follow these instructions to install ROS
-  * [ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) if you have Ubuntu 16.04.
-  * [ROS Indigo](http://wiki.ros.org/indigo/Installation/Ubuntu) if you have Ubuntu 14.04.
-
-Install python dependencies
-```bash
-cd CarND-Capstone
-pip install -r requirements.txt
-```
-
-### Docker Installation
-[Install Docker](https://docs.docker.com/engine/installation/)
-
-1. Build the docker container:
-```bash
-docker build . -t capstone
-```
-
-2. Run the docker container, and name it `udacity`:
-```bash
-docker run -p 4567:4567 -v $PWD:/capstone -v /tmp/log:/root/.ros/ --name udacity  --rm -it capstone
-```
-
-3. If extra terminals are needed, you can connect to the named container:
-```bash
-docker exec -it udacity /bin/bash
-
-# Remember to source ROS if needed
-source devel/setup.bash
-```
-
-To set up port forwarding, please refer to the "uWebSocketIO Starter Guide" found in the classroom (see Extended Kalman Filter Project lesson).
+## Testing
 
 ### Simulator
 
-* Download the [Udacity Simulator](https://github.com/udacity/CarND-Capstone/releases).
+1. Run the simulator locally: The camera must be enabled and the manual mode disabled.
 
-Run simulator locally:
+2. Build and launch styx.launch locally or on the docker container:
 ```bash
-# Setup
-unzip linux_sys_int.zip
-chmod +x linux_sys_int/sys_int.x86_64
-
-# Run
-./linux_sys_int/sys_int.x86_64
-```
-
-### Other library/driver information
-Outside of `requirements.txt`, here is information on other driver/library versions used in the simulator and Carla:
-
-Specific to these libraries, the simulator grader and Carla use the following:
-
-|        | Simulator | Carla  |
-| :-----------: |:-------------:| :-----:|
-| Nvidia driver | 384.130 | 384.130 |
-| CUDA | 8.0.61 | 8.0.61 |
-| cuDNN | 6.0.21 | 6.0.21 |
-| TensorRT | N/A | N/A |
-| OpenCV | 3.2.0-dev | 2.4.8 |
-| OpenMP | N/A | N/A |
-
-We are working on a fix to line up the OpenCV versions between the two.
-
-
-## Usage
-
-1. Build and launch styx.launch locally or on a docker container.
-```bash
+# Build
 cd ros
+source /opt/ros/kinetic/setup.bash
 catkin_make
+
+# Launch
 source devel/setup.sh
 roslaunch launch/styx.launch
 ```
 
-2. Run the simulator locally.
+### Real World Data
 
-## Real world testing
-1. Download [training bag](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/traffic_light_bag_file.zip) that was recorded on the Udacity self-driving car.
+1. Prepare the [training bag](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/traffic_light_bag_file.zip) that was recorded on the Udacity self-driving car.
 2. Unzip the file
 ```bash
 unzip traffic_light_bag_file.zip
@@ -121,7 +53,8 @@ roslaunch launch/site.launch
 
 ## Design
 
-TODO
+TODO.
+- [Traffic Light Detector Training](./training/README.md)
 
 ## Results
 
@@ -129,4 +62,5 @@ TODO
 
 ## Acknowledgements
 
-TODO
+- Most of the implementation for ROS nodes and controllers was obtained from Udacity classroom lessons.
+- Labeled data, and training scripts for the traffic light detector were provided by user [vatsl](https://github.com/vatsl) on the repository [TrafficLight_Detection-TensorFlowAPI](https://github.com/vatsl/TrafficLight_Detection-TensorFlowAPI).
