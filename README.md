@@ -68,6 +68,20 @@ chmod +x linux_sys_int/sys_int.x86_64
 # Run
 ./linux_sys_int/sys_int.x86_64
 ```
+### Run rviz and rqt using VNC docker
+1. Connect to the docker using
+docker run -p 4567:4567 -v $PWD:/capstone -v /tmp/log:/root/.ros/ --name udacity -it --rm -p 6080:80 ct2034/vnc-ros-kinetic-full
+
+2. The VNC server of your docker image will be available in:
+http://127.0.0.1:6080/
+
+3. Open the terminal and:
+``` bash
+cd /capstone/ros/
+source devel/setup.bash
+rviz
+rqt
+```
 
 ### Other library/driver information
 Outside of `requirements.txt`, here is information on other driver/library versions used in the simulator and Carla:
