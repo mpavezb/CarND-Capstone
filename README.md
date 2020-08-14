@@ -10,55 +10,72 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
 
 - [Installation](./INSTALL.md): Local/Docker setup, simulator, and dependencies.
 - [Testing](#testing): How to test on the simulator and the real car data.
-- [Design](#design): TODO
-- [Results](#results): TODO
+- [Implementation](#implementation): Design and implementation details.
+- [Results](#results).
 - [Acknowledgements](#acknowledgements).
 
-
 ## Testing
+
+### Build
+
+Compile the project locally or on the docker container:
+
+```bash
+cd ros
+source /opt/ros/kinetic/setup.bash
+catkin_make
+source devel/setup.sh
+```
 
 ### Simulator
 
 1. Run the simulator locally: The camera must be enabled and the manual mode disabled.
+2. Launch styx.launch locally or on the docker container.
 
-2. Build and launch styx.launch locally or on the docker container:
 ```bash
-# Build
 cd ros
-source /opt/ros/kinetic/setup.bash
-catkin_make
-
-# Launch
-source devel/setup.sh
 roslaunch launch/styx.launch
 ```
 
 ### Real World Data
 
-1. Prepare the [training bag](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/traffic_light_bag_file.zip) that was recorded on the Udacity self-driving car.
-2. Unzip the file
-```bash
-unzip traffic_light_bag_file.zip
-```
-3. Play the bag file
+1. Run the [Rosbag](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/traffic_light_bag_file.zip) file that was recorded on the Udacity self-driving car:
+2. Launch the project in your project in site mode
+
 ```bash
 rosbag play -l traffic_light_bag_file/traffic_light_training.bag
-```
-4. Launch your project in site mode
-```bash
-cd CarND-Capstone/ros
+
+cd ros
 roslaunch launch/site.launch
 ```
-5. Confirm that traffic light detection works on real life images
 
-## Design
+## Implementation
 
-TODO.
-- [Traffic Light Detector Training](./training/README.md)
+### Waypoints
+
+- TODO: About decceleration profile for the trajectory.
+
+### DBW Controller
+
+- TODO: How the PID for throttle was tuned.
+- TODO: Insights on the yaw controller.
+- TODO: How to deal with stop and go scenarios.
+
+### Trafic Light Detector
+
+Labeled data, and training scripts for the traffic light detector were provided by user [vatsl](https://github.com/vatsl) on the repository [TrafficLight_Detection-TensorFlowAPI](https://github.com/vatsl/TrafficLight_Detection-TensorFlowAPI).
+
+A different container matching the exact dependencies as in the real car was used for training the model. Instructions can be found in the respective [training section](./training/README.md).
+
+- TODO: About the dataset.
+- TODO: About the model.
+- TODO: About the results for simulation.
+- TODO: About the results for real car data.
 
 ## Results
 
-TODO
+- TODO: Add images/video.
+- TODO: (Improvement - Corner case): About how dealing with yellow lights would improve the stop.
 
 ## Acknowledgements
 
