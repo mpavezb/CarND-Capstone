@@ -72,6 +72,7 @@ class Controller(object):
             # stop vehicle
             command.throttle = 0
             command.brake = 700  # !
+            self.throttle_controller.reset()
 
         elif command.throttle < 0.1 and vel_error < 0:
             # almost stopped
@@ -81,6 +82,7 @@ class Controller(object):
 
             command.throttle = 0
             command.brake = abs(decel) * mass * wheel_radius
+            self.throttle_controller.reset()
 
         command.steer = self.yaw_controller.get_steering(
             target_vel.linear, target_vel.angular, current_vel_linear

@@ -8,6 +8,7 @@ import copy
 import numpy as np
 import math
 from scipy.spatial import KDTree
+from geometry_msgs.msg import TwistStamped
 
 """
 This node will publish waypoints from the car's current position to some `x` distance ahead.
@@ -24,7 +25,7 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 """
 
-LOOKAHEAD_WPS = 200  # Number of waypoints to publish.
+LOOKAHEAD_WPS = 46  # Number of waypoints to publish - factor of total number of created points.
 FREQUENCY = 30  # Execution frequency
 MAX_DECEL = 0.5
 
@@ -38,6 +39,7 @@ class WaypointUpdater(object):
         self.waypoints_2d = None
         self.waypoint_tree = None
         self.stopline_wp_idx = -1
+        self.current_vel = None
 
         # TODO: Limit speed by max velocity parameter
         # TODO: comply with accel/jerk limits
@@ -46,6 +48,8 @@ class WaypointUpdater(object):
         rospy.Subscriber("/current_pose", PoseStamped, self.pose_cb)
         rospy.Subscriber("/base_waypoints", Lane, self.waypoints_cb)
         rospy.Subscriber("/traffic_waypoint", Int32, self.traffic_cb)
+        rospy.Subscriber("/current_velocity", TwistStamped, self.velocity_cb)
+
         # rospy.Subscriber("/obstacle_waypoint", Int32, self.obstacle_cb)
         # rospy.Subscriber("/vehicle/traffic_lights", TrafficLightArray, self.traffic_sim_cb)
         self.final_waypoints_pub = rospy.Publisher(
@@ -85,14 +89,17 @@ class WaypointUpdater(object):
         # How many waypoints ahead we want to stop.
         stop_idx = max(self.stopline_wp_idx - closest_idx - 3, 0)
 
+        SCALING_FACTOR = 10  # change the deceleration profile - higher values will make the car decelerate only when closer to the traffic light
+        dist = self.distance(waypoints, 0, stop_idx)
+        max_allowed_vel = math.sqrt(SCALING_FACTOR * MAX_DECEL * dist)
+
         # rospy.logwarn(
-        #     "c_id: {}, stop_line_id: {}, stop_idx: {}".format(
-        #         closest_idx, self.stopline_wp_idx, stop_idx
+        #     "max_vel_to_stop: {}, curr_vel: {}".format(
+        #         max_allowed_vel, self.current_vel
         #     )
         # )
-
-        # TODO: compute based on speed and decel
-        distance_buffer = 20
+        if max_allowed_vel > self.current_vel:
+            return waypoints
 
         for i, wp in enumerate(waypoints):
             p = Waypoint()
@@ -100,15 +107,10 @@ class WaypointUpdater(object):
             p.twist = copy.deepcopy(wp.twist)
 
             dist = self.distance(waypoints, i, stop_idx)
-            vel = math.sqrt(2 * MAX_DECEL * dist)
+            vel = math.sqrt(SCALING_FACTOR * MAX_DECEL * dist)
 
-            # Not the place to do it, but anyway
-            # self.max_speed = 100
-            # vel = max(0.0, min(self.max_speed, vel))
             vel = max(0.0, vel)
-            if dist < distance_buffer:
-                p.twist.twist.linear.x = min(vel, p.twist.twist.linear.x)
-            # rospy.logwarn(" - dist: {}, vel: {} ".format(dist, p.twist.twist.linear.x))
+            p.twist.twist.linear.x = min(vel, p.twist.twist.linear.x)
             result.append(p)
         return result
 
@@ -138,6 +140,9 @@ class WaypointUpdater(object):
         self.base_waypoints = msg
         if not self.waypoints_2d:
             self.init_kdtree()
+
+    def velocity_cb(self, msg):
+        self.current_vel = msg.twist.linear.x
 
     def traffic_cb(self, msg):
         self.stopline_wp_idx = msg.data
